@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Gemini 사용 가능한 모델 확인</title>
+</head>
+<body>
+    <h1>Gemini API 모델 목록 확인</h1>
+    <div id="result"></div>
+    
+    <script>
+        // .env.local에서 가져온 API 키를 여기에 입력하세요
+        const API_KEY = prompt('VITE_GEMINI_API_KEY 를 입력하세요:');
+        
+        const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
+        
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                console.log('사용 가능한 모델들:', data);
+                const resultDiv = document.getElementById('result');
+                
+                if (data.models) {
+                    const models = data.models
+                        .filter(m => m.supportedGenerationMethods.includes('generateContent'))
+                        .map(m => m.name);
+                    
+                    resultDiv.innerHTML = `
+                        <h2>generateContent 지원 모델:</h2>
+                        <ul>
+                            ${models.map(m => `<li>${m}</li>`).join('')}
+                        </ul>
+                    `;
+                } else {
+                    resultDiv.innerHTML = '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('result').innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+            });
+    </script>
+</body>
+</html>
