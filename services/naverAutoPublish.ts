@@ -21,10 +21,11 @@ export interface AutomationData {
 }
 
 /**
- * sessionStorage에서 자동화 데이터 가져오기
+ * localStorage에서 자동화 데이터 가져오기
+ * ⚠️ localStorage는 탭 간에 공유됩니다 (새 탭에서도 접근 가능)
  */
 export function getAutomationData(): AutomationData | null {
-  const dataStr = sessionStorage.getItem('naver_autopost_data');
+  const dataStr = localStorage.getItem('naverAutoPublishData');
   if (!dataStr) {
     return null;
   }
@@ -34,7 +35,7 @@ export function getAutomationData(): AutomationData | null {
     
     // 5분 이상 경과한 데이터는 무효화 (보안)
     if (Date.now() - data.timestamp > 5 * 60 * 1000) {
-      sessionStorage.removeItem('naver_autopost_data');
+      localStorage.removeItem('naverAutoPublishData');
       return null;
     }
 
@@ -49,7 +50,7 @@ export function getAutomationData(): AutomationData | null {
  * 자동화 데이터 삭제 (보안 청소)
  */
 export function clearAutomationData(): void {
-  sessionStorage.removeItem('naver_autopost_data');
+  localStorage.removeItem('naverAutoPublishData');
   console.log('🔒 보안 청소: 자동화 데이터 삭제됨');
 }
 
@@ -122,7 +123,7 @@ export async function executeNaverAutoPublish(data: AutomationData): Promise<voi
     //   console.log('ℹ️ 도움말 패널 없음');
     // }
 
-    // 제목 입력 (0.03초 간격)
+    // 제목 입력 (개발정의서.md 88줄: "한 글자씩 0.03초 간격")
     // await browser.click({
     //   element: '제목 입력란',
     //   ref: '.se-section-documentTitle, [data-document-title]'
@@ -132,8 +133,7 @@ export async function executeNaverAutoPublish(data: AutomationData): Promise<voi
     //   element: '제목 입력란',
     //   ref: '.se-section-documentTitle, [data-document-title]',
     //   text: data.content.title,
-    //   slowly: true,
-    //   delay: 30 // 0.03초 = 30ms
+    //   delay: 30 // 0.03초 = 30ms (개발정의서.md 명시)
     // });
 
     // 본문 입력 (HTML 태그 제거 후 0.03초 간격)
@@ -150,7 +150,7 @@ export async function executeNaverAutoPublish(data: AutomationData): Promise<voi
     //   ref: '.se-section-text, [contenteditable="true"]'
     // });
 
-    // 줄바꿈 포함하여 입력
+    // 줄바꿈 포함하여 입력 (개발정의서.md 93줄: "줄바꿈(Enter) 포함하여 한 글자씩 0.03초 간격")
     // const lines = plainText.split('\n');
     // for (let i = 0; i < lines.length; i++) {
     //   if (lines[i].trim()) {
@@ -158,8 +158,7 @@ export async function executeNaverAutoPublish(data: AutomationData): Promise<voi
     //       element: '본문 입력란',
     //       ref: '.se-section-text',
     //       text: lines[i],
-    //       slowly: true,
-    //       delay: 30 // 0.03초 = 30ms
+    //       delay: 30 // 0.03초 = 30ms (개발정의서.md 명시)
     //     });
     //   }
     //   
@@ -190,9 +189,10 @@ export async function executeNaverAutoPublish(data: AutomationData): Promise<voi
     throw error;
 
   } finally {
-    // 보안 청소
+    // Step 4: 보안 청소 (개발정의서.md 97-98줄: Security Cleanup)
+    // try...finally 구문으로 성공/실패 여부와 상관없이 계정 정보 파기
     clearAutomationData();
-    console.log('🔒 보안 청소: 계정 정보 메모리에서 파기됨');
+    console.log('🔒 보안 청소: 임시 인증 정보가 안전하게 파기되었습니다.');
   }
 }
 

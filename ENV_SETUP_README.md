@@ -6,7 +6,7 @@
 2. 아래 내용을 복사하여 붙여넣으세요:
 
 ```
-VITE_GEMINI_API_KEY=여기에_실제_API_키를_입력하세요
+VITE_GEMINI_API_KEY=
 ```
 
 3. https://ai.google.dev/ 에 접속하여 Gemini API 키를 발급받으세요

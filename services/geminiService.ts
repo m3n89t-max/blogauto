@@ -13,9 +13,10 @@ const getApiKey = () => {
 const callGeminiAPI = async (prompt: string): Promise<string> => {
   const apiKey = getApiKey();
   
-  // Gemini 1.5 Flash 모델 사용
-  const model = 'gemini-1.5-flash';
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  // Gemini 모델 사용 (최신 2.5 Flash - 2026년 기준 최신 모델)
+  // 개발정의서.md 29줄: Gemini 2.5 Pro 명시, 현재는 2.5 Flash 사용 (빠르고 안정적)
+  const model = 'gemini-2.5-flash'; // 2026년 1월 기준 최신 안정 모델
+  const url = `https://generativelanguage.googleapis.com/v1/models/${model}:generateContent?key=${apiKey}`;
   
   console.log(`🔑 API Key: ${apiKey.substring(0, 10)}...`);
   console.log(`📍 모델: ${model}`);
@@ -81,7 +82,7 @@ export const fetchTrendingNews = async (): Promise<NewsItem[]> => {
 const fetchNewsWithAI = async (): Promise<NewsItem[]> => {
   try {
     // 개발 중: API 키 문제로 인해 더미 데이터 사용
-    const useDummyData = true; // TODO: API 키 문제 해결 시 false로 변경
+    const useDummyData = false; // API 키 입력 완료: 실제 Gemini API 사용
     
     if (useDummyData) {
       console.log('🔧 개발 모드: 더미 뉴스 데이터 사용');
@@ -168,16 +169,45 @@ const fetchNewsWithAI = async (): Promise<NewsItem[]> => {
 3. 실제 있을 법한 구체적이고 현실적인 제목과 내용
 4. 다양한 언론사: 조선일보, 중앙일보, 한국경제, 매일경제, 서울신문, 한겨레, 연합뉴스, IT조선, 디지털타임스 등
 
-JSON 배열 형식으로만 반환해줘. 각 뉴스는 다음 형식:
+⚠️ 중요: JSON 배열 형식으로만 반환해줘. 마크다운 코드 블록(\`\`\`json) 사용하지 말 것!
+
+각 뉴스는 다음 형식으로 작성:
 [
   {
     "id": "news1",
-    "title": "뉴스 제목",
+    "title": "뉴스 제목 (핵심 키워드 포함, 20-40자)",
     "source": "언론사명",
-    "summary": "뉴스 요약",
-    "link": "https://news.naver.com/..."
+    "summary": "뉴스 요약 (2-3줄, 핵심 내용 중심)",
+    "link": "https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=015&aid=0004945123",
+    "published_at": "2026-01-27",
+    "excerpts": [
+      "본문 발췌 1 (구체적인 내용)",
+      "본문 발췌 2 (추가 세부사항)"
+    ],
+    "key_points": [
+      "핵심 수치나 인용문 1",
+      "핵심 수치나 인용문 2"
+    ]
   }
-]`;
+]
+
+예시:
+{
+  "id": "news1",
+  "title": "삼성전자, 3나노 반도체 양산 성공...세계 최초 상용화",
+  "source": "한국경제",
+  "summary": "삼성전자가 3나노 공정 반도체 양산에 성공하며 세계 최초로 상용화에 나섰다. 기존 5나노 대비 성능 30% 향상, 전력 소모 50% 감소를 실현했다.",
+  "link": "https://news.naver.com/main/read.naver?mode=LSD&mid=shm&sid1=105&oid=015&aid=0004945123",
+  "published_at": "2026-01-27",
+  "excerpts": [
+    "삼성전자는 27일 평택 반도체 공장에서 3나노 GAA(Gate-All-Around) 공정을 적용한 차세대 반도체 양산을 시작했다고 밝혔다.",
+    "업계에서는 이번 성과로 삼성이 TSMC와의 기술 격차를 좁히고 AI 반도체 시장에서 경쟁력을 확보할 것으로 전망하고 있다."
+  ],
+  "key_points": [
+    "성능 30% 향상, 전력 소모 50% 감소",
+    "연구개발비 20조원 투자, 엔지니어 5천명 투입"
+  ]
+}`;
 
     const resultText = await callGeminiAPI(prompt);
     
@@ -193,14 +223,96 @@ JSON 배열 형식으로만 반환해줘. 각 뉴스는 다음 형식:
     return news;
   } catch (error) {
     console.error("뉴스 생성 실패:", error);
-    // API 실패 시 더미 데이터 반환
-    console.warn("⚠️ API 실패로 인해 더미 데이터 사용");
+    // API 실패 시 더미 데이터 10개 반환
+    console.warn("⚠️ API 실패로 인해 더미 데이터 10개 사용");
     return [
       {
         id: "fallback1",
-        title: "AI 기술 발전으로 일상 생활 변화...스마트 홈 시장 급성장",
+        title: "삼성전자, 차세대 AI 반도체 개발 본격화...글로벌 시장 공략 나서",
         source: "한국경제",
-        summary: "인공지능 기술의 발전으로 스마트 홈 시장이 급성장하고 있다. 음성 인식과 자동화 시스템이 결합되어 생활 편의성이 크게 향상되고 있으며, 관련 산업도 활기를 띠고 있다.",
+        summary: "삼성전자가 인공지능(AI) 반도체 시장 선점을 위해 차세대 제품 개발에 박차를 가하고 있다.",
+        link: "https://news.naver.com/",
+        published_at: "2026-01-27",
+        excerpts: [
+          "삼성전자는 AI 반도체 시장에서 경쟁력을 확보하기 위해 3나노 공정 기반의 차세대 제품 개발에 집중하고 있다.",
+          "업계에서는 2026년 하반기 본격 양산을 목표로 하고 있으며, 글로벌 시장 점유율 30% 달성을 목표로 하고 있다."
+        ],
+        key_points: [
+          "R&D 투자 15조원 규모",
+          "AI 반도체 전문 인력 3,000명 확보"
+        ]
+      },
+      {
+        id: "fallback2",
+        title: "전기차 배터리 성능 2배 향상...충전 시간 10분으로 단축",
+        source: "IT조선",
+        summary: "국내 연구진이 전기차 배터리 충전 속도를 획기적으로 개선하는 기술을 개발했다.",
+        link: "https://news.naver.com/",
+        published_at: "2026-01-27",
+        excerpts: [
+          "한국과학기술원(KAIST) 연구팀이 리튬이온 배터리의 에너지 밀도를 2배 향상시키는 신소재를 개발했다.",
+          "이 기술은 완전 충전 시간을 기존 1시간에서 10분으로 단축할 수 있어 전기차 보급 확대에 크게 기여할 것으로 기대된다."
+        ],
+        key_points: [
+          "에너지 밀도 2배 향상",
+          "충전 시간 10분으로 단축",
+          "2027년 상용화 목표"
+        ]
+      },
+      {
+        id: "fallback3",
+        title: "서울 아파트 평균 매매가 12억 돌파...강남권은 20억 육박",
+        source: "매일경제",
+        summary: "서울 아파트 평균 매매가가 사상 처음으로 12억원을 넘어섰다.",
+        link: "https://news.naver.com/"
+      },
+      {
+        id: "fallback4",
+        title: "ChatGPT 한국어 버전 업데이트...K-컬처 특화 기능 추가",
+        source: "디지털타임스",
+        summary: "오픈AI가 ChatGPT 한국어 버전에 K-pop, K-드라마 등 한국 문화 콘텐츠에 특화된 기능을 추가했다.",
+        link: "https://news.naver.com/"
+      },
+      {
+        id: "fallback5",
+        title: "2026년 최저임금 1만 2천원 확정...전년 대비 5.3% 인상",
+        source: "연합뉴스",
+        summary: "최저임금위원회가 2026년 최저임금을 시간당 1만 2천원으로 최종 확정했다.",
+        link: "https://news.naver.com/"
+      },
+      {
+        id: "fallback6",
+        title: "BTS 정국, 솔로 앨범 빌보드 1위...K-POP 역사 새로 써",
+        source: "중앙일보",
+        summary: "방탄소년단 정국의 솔로 앨범이 빌보드 메인 차트에서 1위를 차지했다.",
+        link: "https://news.naver.com/"
+      },
+      {
+        id: "fallback7",
+        title: "우리나라 출산율 0.68명...역대 최저 경신",
+        source: "서울신문",
+        summary: "통계청이 발표한 2025년 합계출산율이 0.68명으로 집계됐다.",
+        link: "https://news.naver.com/"
+      },
+      {
+        id: "fallback8",
+        title: "손흥민, EPL 통산 200골 달성...아시아 선수 최초",
+        source: "조선일보",
+        summary: "토트넘의 손흥민이 프리미어리그 통산 200골을 달성했다.",
+        link: "https://news.naver.com/"
+      },
+      {
+        id: "fallback9",
+        title: "서울 지하철 9호선 연장 개통...김포공항역까지 직결",
+        source: "한겨레",
+        summary: "서울 지하철 9호선이 김포공항역까지 연장 개통됐다.",
+        link: "https://news.naver.com/"
+      },
+      {
+        id: "fallback10",
+        title: "AI가 진단하는 암 조기 발견율 95%...의료 혁명 예고",
+        source: "IT조선",
+        summary: "인공지능(AI)을 활용한 암 진단 시스템이 조기 발견율 95%를 달성했다.",
         link: "https://news.naver.com/"
       }
     ];
@@ -213,7 +325,7 @@ export const generateBlogPost = async (
   settings: PostSettings
 ): Promise<{ title: string; body: string; imageUrl?: string }> => {
   // 개발 중: API 키 문제로 인해 더미 데이터 사용
-  const useDummyData = true; // TODO: API 키 문제 해결 시 false로 변경
+  const useDummyData = false; // API 키 입력 완료: 실제 Gemini API 사용
   
   if (useDummyData) {
     console.log('🔧 개발 모드: 더미 블로그 포스트 생성');
@@ -235,31 +347,30 @@ export const generateBlogPost = async (
       title: settings.useAiTitle 
         ? `${news.title} - 나의 생각` 
         : settings.manualTitle || news.title,
-      body: `
-        <h2>${news.title}</h2>
-        <p class="text-gray-600 mb-4"><strong>출처:</strong> ${news.source}</p>
-        
-        <div class="mb-6">
-          <h3 class="text-xl font-bold mb-3">뉴스 요약</h3>
-          <p class="leading-relaxed">${news.summary}</p>
-        </div>
-        
-        <div class="mb-6">
-          <h3 class="text-xl font-bold mb-3">나의 생각</h3>
-          <p class="leading-relaxed">${thoughts || '이 뉴스에 대한 개인적인 견해를 작성해보세요.'}</p>
-        </div>
-        
-        <div class="mt-8 p-4 bg-gray-100 rounded-lg">
-          <p class="text-sm text-gray-600">
-            <strong>작성 스타일:</strong> ${toneTexts[settings.tone]} 작성되었습니다.<br>
-            <strong>사진 옵션:</strong> ${settings.photoOption === 'news' ? '뉴스 사진' : settings.photoOption === 'ai' ? 'AI 생성' : '사진 없음'}
-          </p>
-        </div>
-        
-        <p class="mt-6 text-xs text-gray-500">
-          ⚠️ 개발 모드: Gemini API 연동 후 실제 AI 생성 콘텐츠로 교체됩니다.
-        </p>
-      `,
+      body: `최근 ${news.source}에서 흥미로운 소식이 전해졌습니다. ${news.summary}
+
+이번 뉴스의 배경을 살펴보면, ${news.title}라는 점에서 많은 이들의 관심을 받고 있습니다. 보도에 따르면 이는 해당 분야에서 주목받는 중요한 발전으로 평가받고 있으며, 업계에서도 상당한 의미가 있다는 분석이 나오고 있습니다.
+
+${news.key_points && news.key_points.length > 0 ? `특히 주목할 만한 점은 다음과 같습니다. ${news.key_points.join(', ')}. 이러한 수치들은 이번 이슈의 중요성을 더욱 부각시키고 있습니다.` : '구체적인 수치와 데이터는 향후 더 명확해질 것으로 보입니다.'}
+
+이 뉴스가 주목받는 이유는 관련 산업과 시장에 직접적인 영향을 미칠 것으로 보이기 때문입니다. 일반 소비자부터 관련 업계 종사자, 투자자들까지 폭넓은 영향을 받을 것으로 예상되며, 향후 발전 방향을 가늠할 수 있는 중요한 지표가 될 것입니다.
+
+사실 이러한 변화는 최근 몇 년간 지속적으로 진행되어 온 흐름의 연장선상에 있습니다. 관련 분야에서는 꾸준히 발전과 변화가 있었으며, 이번 뉴스는 그러한 추세를 더욱 가속화할 것으로 보입니다.
+
+앞으로는 실제 적용 사례와 시장 반응, 그리고 관련 정책 변화를 주목할 필요가 있습니다. 단기적으로는 여러 시행착오가 있을 수 있지만, 장기적으로는 긍정적인 방향으로 나아갈 것이라는 전망이 우세합니다.
+
+${thoughts ? thoughts : '저는 이번 뉴스가 해당 분야의 중요한 전환점이 될 수 있다고 봅니다. 실제로 우리 일상에 어떤 변화를 가져올지 기대되며, 관련 동향을 계속 주시할 필요가 있다고 생각합니다. 개인적으로는 이러한 변화가 궁극적으로 소비자들에게 더 나은 선택지를 제공할 것이라고 기대하고 있습니다.'}
+
+결국 이번 뉴스는 관련 분야의 중요한 변화를 알리는 신호탄이라고 할 수 있습니다. 앞으로의 전개 과정을 지켜보는 것이 중요하겠습니다.
+
+━━━━━━━━━━━━━━━━━━━━
+
+📌 참고 자료
+• 출처: ${news.source}
+• 기사 링크: ${news.link}
+${news.published_at ? `• 발행일: ${news.published_at}` : ''}
+
+⚠️ 이 글은 위 출처를 바탕으로 작성되었으며, 블로거의 개인적인 해석과 의견이 포함되어 있습니다.`,
       imageUrl
     };
   }
@@ -273,27 +384,103 @@ export const generateBlogPost = async (
     friendly: "친근하고 편안한 이웃과 대화하는 듯한 스타일"
   };
 
-  const prompt = `다음 뉴스를 바탕으로 네이버 블로그 포스팅을 "한국어(Korean)"로 작성해줘.
+  // naver_news_blog_ko.md 프롬프트 참조
+  const angleDescriptions = {
+    investment: '투자 (주식, 자산, 수익성 중심)',
+    policy: '정책 (정부 정책, 규제, 제도 중심)',
+    technology: '기술 (혁신, 기술 발전, 구현 방법 중심)',
+    life: '생활영향 (일상 변화, 소비자 영향 중심)'
+  };
 
-[뉴스 정보]
-제목: ${news.title}
-출처: ${news.source}
-내용 요약: ${news.summary}
+  // {{SCRAPED_ARTICLES}} 템플릿 변수 준비
+  const scrapedArticles = `[1] (${news.source}) ${news.title}
+URL: ${news.link}
+${news.published_at ? `발행: ${news.published_at}` : ''}
+본문 발췌/요약:
+${news.excerpts ? news.excerpts.map(e => `- ${e}`).join('\n') : `- ${news.summary}`}
+${news.key_points ? `핵심 수치/인용:\n${news.key_points.map(k => `- ${k}`).join('\n')}` : ''}`;
 
-[작성자 생각]
-${thoughts}
+  // {{MY_NOTES}} 템플릿 변수 준비
+  const myNotes = thoughts || '';
 
-[작성 조건]
-언어: 한국어 (반드시 한국어로만 작성할 것)
-말투(톤): ${toneDescriptions[settings.tone]}
-제목 설정: ${settings.useAiTitle ? "뉴스 내용과 작성자 생각을 결합한 매력적인 제목 생성" : `직접 입력된 제목(${settings.manualTitle}) 사용`}
+  const prompt = `당신은 한국 네이버 뉴스 블로그를 운영하는 시사 해설 블로거입니다.
+목표는 "기사 요약 + 맥락 + 내 생각(1인칭)"이 섞인, 사람이 쓴 듯한 블로그 글을 만드는 것입니다.
 
-[출력 형식]
-JSON 형식으로만 반환해줘:
+[중요 원칙]
+- 원문 문장을 그대로 복사하지 마세요(표절 금지). 같은 의미라도 문장을 새로 작성하세요.
+- 사실과 의견을 구분하세요. 확인되지 않은 내용은 단정하지 말고 "보도에 따르면" 등으로 표현하세요.
+- 과장/선동/자극적인 표현 금지. 차분하고 이해하기 쉬운 한국어 블로그 톤.
+- 출력은 반드시 JSON만. JSON 외 텍스트 금지. 마크다운 코드 블록(\`\`\`json) 사용 금지.
+
+[입력값]
+- 주제/키워드: ${settings.topic || '(자동 추출)'}
+- 글의 목적/관점: ${angleDescriptions[settings.angle || 'technology']}
+- 톤: ${toneDescriptions[settings.tone]}
+- 내 생각 메모: ${myNotes ? `"${myNotes}"` : '(없음)'}
+
+[스크랩한 기사/자료]
+${scrapedArticles}
+
+[content 작성 규칙]
+⚠️ 중요: **순수 텍스트**로만 작성! HTML 태그, 마크다운 문법 절대 사용 금지!
+- 문단 구분은 빈 줄(\\n\\n)로만
+- 절대로 <p>, <h2>, ##, #, **, * 같은 HTML/마크다운 기호 사용 금지!
+- 이모지 섹션 제목(예: 📰 오늘의 핵심 뉴스 요약) 사용 금지!
+- 자연스럽게 흐르는 블로그 글처럼 작성
+
+[글의 흐름 및 구조]
+아래 내용을 **자연스럽게 통합**하여 한 편의 블로그 글로 작성하세요:
+
+1. **도입부**: 핵심 뉴스를 2-3줄로 요약하며 시작
+   - "최근 OO에서 XX한 소식이 전해졌습니다."
+   - "오늘은 OO 관련 중요한 뉴스를 다뤄보려고 합니다."
+
+2. **사실 전달**: 무슨 일이 있었는지 구체적으로 설명 (3-5문장)
+   - 출처, 날짜, 구체적 내용
+   - 핵심 발언이나 수치가 있다면 자연스럽게 포함
+   - 예: "보도에 따르면...", "OO는 XX라고 밝혔습니다."
+
+3. **의미 분석**: 왜 중요한지, 누구에게 영향을 미치는지 설명 (3-4문장)
+   - "이 뉴스가 주목받는 이유는..."
+   - "OO 업계/소비자/투자자들에게는..."
+
+4. **맥락 제공**: 배경과 흐름 (2-3문장)
+   - "사실 이 이슈는 지난..."
+   - "최근 몇 년간 OO 분야에서는..."
+
+5. **전망**: 앞으로 주목할 포인트 (2-3문장)
+   - "앞으로는...", "향후 OO을 지켜볼 필요가 있습니다."
+
+6. **개인 의견** (1인칭 사용, 3-5문장):
+   - "저는 이번 뉴스를 보며..."
+   - "제 생각에는..."
+   - 내 생각 메모(MY_NOTES)가 있으면 그 내용을 우선 반영하여 확장
+
+7. **마무리**: 한 문장으로 핵심 요약
+   - "결국 이번 OO 뉴스는 XX를 의미합니다."
+
+8. **출처 표기** (필수):
+   글 마지막에 반드시 아래 형식으로 출처를 명확히 표기하세요:
+   
+   ━━━━━━━━━━━━━━━━━━━━
+   
+   📌 참고 자료
+   • 출처: [출처명]
+   • 기사 링크: [URL]
+   ${news.published_at ? `• 발행일: ${news.published_at}` : ''}
+   
+   ⚠️ 이 정보는 위 출처를 바탕으로 작성되었으며, 블로거의 개인적인 해석과 의견이 포함되어 있습니다.
+
+⚠️ 중요: 위 번호(1, 2, 3...)나 이모지 제목을 글에 넣지 마세요! 자연스럽게 이어지는 한 편의 블로그 글로 작성하세요.
+
+[출력 JSON 스키마]
+⚠️ 반드시 아래 JSON 형식으로만 출력! 다른 텍스트 절대 금지!
 {
-  "title": "블로그 제목",
-  "body": "<p>본문 내용 (HTML 태그 사용 가능)</p>"
-}`;
+  "title": "string (${settings.useAiTitle ? '뉴스 내용과 내 생각을 결합한 매력적인 제목, 20-40자' : settings.manualTitle || news.title})",
+  "body": "string (위 구조를 따르는 순수 텍스트 본문, HTML/마크다운 없음)"
+}
+
+이제 위 입력값과 스크랩 자료를 바탕으로, 스키마에 맞춰 JSON만 출력하세요.`;
 
   try {
     const resultText = await callGeminiAPI(prompt);
@@ -327,8 +514,81 @@ JSON 형식으로만 반환해줘:
     
     return {
       title: settings.useAiTitle ? `${news.title} - 심층 분석` : settings.manualTitle || news.title,
-      body: `<p>${news.summary}</p><br><p>${thoughts}</p>`,
+      body: `${news.summary}\n\n${thoughts}`,
       imageUrl
     };
+  }
+};
+
+/**
+ * AI가 뉴스 본문을 분석하여 후크성 있는 제목 5개를 추천
+ */
+export const generateTitleSuggestions = async (news: NewsItem): Promise<string[]> => {
+  const useDummyData = false; // API 키 입력 완료: 실제 Gemini API 사용
+
+  if (useDummyData) {
+    console.log('🔧 개발 모드: 더미 제목 추천 사용');
+    return [
+      `🚨 ${news.title.substring(0, 20)}... 이게 진짜일까?`,
+      `💰 돈 되는 정보! ${news.title.substring(0, 15)}의 숨은 의미`,
+      `⚠️ 놓치면 후회할 ${news.title.substring(0, 20)}`,
+      `🔥 지금 핫한 ${news.title.substring(0, 15)}, 전문가 분석`,
+      `✨ ${news.title.substring(0, 25)}의 모든 것`
+    ];
+  }
+
+  const prompt = `당신은 네이버 블로그의 전문 카피라이터입니다.
+아래 뉴스 기사를 읽고, 클릭을 유도하는 **후크성 강한 제목 5개**를 제안해주세요.
+
+[뉴스 정보]
+제목: ${news.title}
+출처: ${news.source}
+요약: ${news.summary}
+${news.excerpts ? `본문 발췌:\n${news.excerpts.join('\n')}` : ''}
+${news.key_points ? `핵심 포인트:\n${news.key_points.join('\n')}` : ''}
+
+[제목 작성 원칙]
+1. 20~40자 사이로 작성
+2. 호기심 유발 + 구체적 정보 포함
+3. 숫자/이모지 활용 (예: 🚨, 💰, ⚠️, 🔥, ✨)
+4. 1인칭 또는 독자 직접 호명 (예: "당신이 꼭 알아야 할", "지금 내가 보는")
+5. 긴급성/희소성 표현 (예: "지금", "오늘", "놓치면 후회")
+6. 감정 자극 (예: "충격", "반전", "의외의")
+
+[출력 형식]
+반드시 JSON 배열로만 출력하세요. 다른 텍스트 금지!
+["제목1", "제목2", "제목3", "제목4", "제목5"]
+
+이제 위 뉴스를 바탕으로 5개의 후크성 제목을 JSON 배열로 출력하세요.`;
+
+  try {
+    const resultText = await callGeminiAPI(prompt);
+    
+    // JSON 배열 추출
+    const jsonMatch = resultText.match(/\[[\s\S]*\]/);
+    if (!jsonMatch) {
+      throw new Error("JSON 배열 형식을 찾을 수 없습니다.");
+    }
+    
+    const titles = JSON.parse(jsonMatch[0]);
+    
+    if (!Array.isArray(titles) || titles.length === 0) {
+      throw new Error("유효한 제목 배열을 생성하지 못했습니다.");
+    }
+    
+    console.log('✅ AI 제목 추천 성공:', titles);
+    return titles.slice(0, 5); // 최대 5개만
+    
+  } catch (error: any) {
+    console.error('❌ AI 제목 추천 실패:', error);
+    
+    // 오류 발생 시 기본 제목 반환
+    return [
+      `${news.title}`,
+      `🔍 ${news.title} - 심층 분석`,
+      `💡 ${news.title}의 숨은 의미`,
+      `⚠️ ${news.title}, 알고 보니...`,
+      `✨ ${news.title} - 전문가 해설`
+    ];
   }
 };
