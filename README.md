@@ -13,10 +13,14 @@
 
 ### 핵심 기능
 
-- 🤖 **AI 기반 콘텐츠 생성**: Google Gemini API를 활용한 블로그 포스트 자동 생성
-- 📰 **실시간 인기 뉴스**: 더미 데이터 모드로 뉴스 목록 제공 (추후 네이버 뉴스 API 연동 예정)
+- 🤖 **AI 기반 콘텐츠 생성**: Google Gemini 2.5 Flash API를 활용한 블로그 포스트 자동 생성
+- ✨ **AI 제목 추천**: 후크성 강한 제목 5개를 자동 생성하여 클릭률 극대화
+- 📰 **실시간 인기 뉴스**: AI로 생성된 10개의 뉴스 목록 (발행일, 본문 발췌, 핵심 포인트 포함)
 - 🎨 **다양한 작성 스타일**: 전문적인 / 부드러운 / 유머러스한 / 분석적인 / 친근한 톤 선택
-- 🖼️ **사진 옵션**: 뉴스 사진 / AI 생성 이미지 / 사진 없음
+- 🖼️ **이미지 자동 삽입**: URL 입력 시 네이버 블로그 에디터에 이미지 자동 삽입
+- 📋 **출처 정보 자동 표기**: 기사 출처, 링크, 발행일을 글 하단에 자동 추가
+- 🔄 **자연스러운 글 흐름**: 이모지 섹션 제목 없이 자연스럽게 이어지는 블로그 글
+- 🚀 **완전 자동화**: Express + Playwright 백엔드로 로그인부터 발행까지 원클릭 자동화
 - 🔒 **보안 우선**: 계정 정보는 메모리에 일시적으로만 저장되며 작업 완료 즉시 파기
 - 📱 **반응형 UI**: 모던하고 직관적인 다크 모드 인터페이스
 
@@ -52,30 +56,54 @@ VITE_GEMINI_API_KEY=your_google_gemini_api_key_here
 
 ### 개발 서버 실행
 
+**프론트엔드 + 백엔드 동시 실행 (권장):**
+```bash
+pnpm run dev:all
+# 또는
+npm run dev:all
+```
+
+**프론트엔드만 실행:**
 ```bash
 pnpm run dev
 # 또는
 npm run dev
 ```
 
-브라우저에서 http://localhost:3001을 열어 앱을 확인하세요.
+**백엔드만 실행:**
+```bash
+pnpm run dev:server
+# 또는
+npm run dev:server
+```
+
+- 프론트엔드: http://localhost:3001
+- 백엔드 API: http://localhost:3002
+
+> **참고**: 네이버 블로그 자동 발행 기능을 사용하려면 백엔드 서버가 실행 중이어야 합니다.
 
 ## 📁 프로젝트 구조
 
 ```
 n-autopost/
-├── src/
-│   ├── services/
-│   │   ├── geminiService.ts          # Gemini API 통신
-│   │   ├── mcpBlogAutomation.ts      # MCP 브라우저 자동화
-│   │   └── naverBlogAutomationComplete.ts  # 완전 자동화 로직
-│   ├── types.ts                       # TypeScript 타입 정의
-│   ├── App.tsx                        # 메인 앱 컴포넌트
-│   └── main.tsx                       # 앱 엔트리 포인트
-├── public/
-├── 개발정의서.md                       # 제품 요구사항 정의서 (PRD)
-├── 화면설계서.md                       # UI/UX 설계 문서
-├── todo.md                            # 작업 진행 상황
+├── services/
+│   ├── geminiService.ts              # Gemini API 통신 (뉴스 생성, 블로그 작성, 제목 추천)
+│   ├── mcpBlogAutomation.ts          # MCP 브라우저 자동화
+│   ├── naverBlogAutomationComplete.ts # 완전 자동화 로직
+│   └── naverAutoPublish.ts           # 네이버 자동 발행
+├── server/
+│   └── index.ts                      # Express + Playwright 백엔드 서버
+├── prompts/
+│   └── naver_news_blog_ko.md         # AI 블로그 작성 프롬프트 템플릿
+├── types.ts                          # TypeScript 타입 정의
+├── App.tsx                           # 메인 앱 컴포넌트
+├── index.tsx                         # 앱 엔트리 포인트
+├── 개발정의서.md                      # 제품 요구사항 정의서 (PRD)
+├── 화면설계서.md                      # UI/UX 설계 문서
+├── 동작프로세스.md                    # 자동화 프로세스 상세 가이드
+├── todo.md                           # 작업 진행 상황
+├── BACKEND_SETUP.md                  # 백엔드 서버 설정 가이드
+├── ENV_SETUP_README.md               # 환경 변수 설정 가이드
 ├── package.json
 ├── vite.config.ts
 └── tsconfig.json
@@ -90,11 +118,15 @@ n-autopost/
 - **Tailwind CSS 3.4** - 유틸리티 기반 CSS 프레임워크
 
 ### AI & Automation
-- **Google Gemini 2.5 Pro API** - AI 언어 모델
-- **Playwright** - 브라우저 자동화 (MCP 연동)
+- **Google Gemini 2.5 Flash API** - AI 언어 모델 (뉴스 생성, 블로그 작성, 제목 추천)
+- **Playwright** - 브라우저 자동화
 
-### Backend (예정)
-- **Next.js API Routes** - 서버리스 함수
+### Backend
+- **Express 4.19** - REST API 서버
+- **Playwright** - 네이버 블로그 자동화
+- **tsx** - TypeScript 실행 환경
+
+### 예정
 - **Supabase** - 데이터베이스 및 인증
 
 ## 🔒 보안 정책
@@ -111,16 +143,23 @@ n-autopost/
 - [x] 메인 대시보드 UI
 - [x] 뉴스 자동화 페이지 (다크 모드)
 - [x] 네이버 계정 입력 폼
-- [x] 인기 뉴스 불러오기 (더미 데이터)
-- [x] AI 블로그 포스트 생성 (Gemini API)
-- [x] 작성 옵션 (톤, 사진 옵션)
+- [x] AI 인기 뉴스 생성 (Gemini 2.5 Flash)
+- [x] AI 블로그 포스트 생성 (자연스러운 글 흐름)
+- [x] AI 후크성 제목 5개 추천
+- [x] 작성 옵션 (주제/키워드, 관점, 톤, 사진)
+- [x] 이미지 URL 입력 및 자동 삽입
+- [x] 출처 정보 자동 표기
 - [x] 콘텐츠 미리보기
+- [x] Express + Playwright 백엔드 자동화
+- [x] 네이버 로그인 자동화 (0.03초 간격 타이핑)
+- [x] 블로그 에디터 iframe 처리
+- [x] HTML/마크다운 태그 제거
+- [x] 보안 청소 (Security Cleanup)
 - [x] 자동 스크롤 및 UX 개선
 
 ### 🚧 진행 중
-- [ ] Playwright 자동화 완성 (0.03초 간격 타이핑)
+- [ ] 네이버 캡차 자동 해결 로직
 - [ ] 실제 네이버 뉴스 API 연동
-- [ ] Next.js API 라우트 구현
 
 ### 📋 예정
 - [ ] Supabase 인증 시스템
