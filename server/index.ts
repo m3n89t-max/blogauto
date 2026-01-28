@@ -177,21 +177,39 @@ app.post('/api/auto-publish', async (req: Request, res: Response) => {
     // Step 4: 제목 입력 (개발정의서.md 87-88줄)
     console.log('✍️ Step 4: 제목 입력 중...');
     
+    // 페이지 로딩 대기 시간 증가
+    await page.waitForTimeout(3000);
+    
     const titleSelectors = [
+      // 기존 selector
       '.se-section-documentTitle',
       '[data-document-title]',
       '.se-title-text',
-      'div[contenteditable="true"][placeholder*="제목"]'
+      'div[contenteditable="true"][placeholder*="제목"]',
+      // 추가 selector (더 넓은 범위)
+      'input[placeholder*="제목"]',
+      'textarea[placeholder*="제목"]',
+      '[aria-label*="제목"]',
+      '.se-component-content[data-link="title"]',
+      '.se-component.se-title',
+      '#subject',
+      'input[name="subject"]',
+      '.editor_title',
+      '.title-input',
+      // 가장 일반적인 contenteditable
+      'div[contenteditable="true"]',
+      '[contenteditable="true"]'
     ];
 
     let titleInput = null;
     for (const selector of titleSelectors) {
       try {
-        titleInput = await workingContext.$(selector);
+        // waitForSelector로 변경 (더 안정적)
+        titleInput = await workingContext.waitForSelector(selector, { timeout: 2000, state: 'visible' });
         if (titleInput) {
           console.log(`✅ 제목 입력란 발견: ${selector}`);
           await titleInput.click();
-          await page.waitForTimeout(500);
+          await page.waitForTimeout(1000);
           break;
         }
       } catch (e) {
@@ -200,7 +218,10 @@ app.post('/api/auto-publish', async (req: Request, res: Response) => {
     }
 
     if (!titleInput) {
-      throw new Error('❌ 제목 입력란을 찾을 수 없습니다.');
+      // 디버그 정보 추가
+      console.log('❌ 모든 selector 실패. 페이지 URL:', page.url());
+      console.log('❌ iframe 사용 여부:', frame ? 'Yes' : 'No');
+      throw new Error('❌ 제목 입력란을 찾을 수 없습니다. 네이버 블로그 UI가 변경되었을 수 있습니다.');
     }
 
     // 한 글자씩 0.03초 간격으로 입력
