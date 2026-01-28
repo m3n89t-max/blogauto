@@ -6,7 +6,7 @@ services:
     env: node
     region: singapore
     plan: free
-    buildCommand: npm install && npx playwright install chromium
+    buildCommand: npm install && npx playwright install --with-deps chromium
     startCommand: npm run start:server
     envVars:
       - key: NODE_ENV
