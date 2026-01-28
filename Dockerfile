@@ -1,5 +1,5 @@
 # Playwright 공식 이미지 사용 (Node.js + Chromium 포함)
-FROM mcr.microsoft.com/playwright:v1.40.0-focal
+FROM mcr.microsoft.com/playwright:v1.58.0-focal
 
 # 작업 디렉토리 설정
 WORKDIR /app
