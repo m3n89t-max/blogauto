@@ -2,12 +2,11 @@
 services:
   - type: web
     name: n-autopost-backend
-    runtime: node
-    env: node
+    runtime: docker
+    env: docker
     region: singapore
     plan: free
-    buildCommand: npm install && npx playwright install --with-deps chromium
-    startCommand: npm run start:server
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
