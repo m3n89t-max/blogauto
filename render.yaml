@@ -1,0 +1,16 @@
+# Render.com 배포 설정 파일
+services:
+  - type: web
+    name: n-autopost-backend
+    runtime: node
+    env: node
+    region: singapore
+    plan: free
+    buildCommand: npm install && npx playwright install chromium
+    startCommand: npm run start:server
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3002
+    healthCheckPath: /api/health

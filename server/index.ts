@@ -3,11 +3,40 @@ import cors from 'cors';
 import { chromium, Browser, Page } from 'playwright';
 
 const app = express();
-const PORT = 3002;
+const PORT = process.env.PORT || 3002;
 
-// 미들웨어
-app.use(cors());
+// CORS 설정 (프로덕션 환경 고려)
+const allowedOrigins = [
+  'http://localhost:3001',
+  'http://localhost:5173',
+  'https://n-autopost.vercel.app', // Vercel 배포 URL (실제 URL로 변경 필요)
+  /\.vercel\.app$/ // 모든 Vercel 프리뷰 URL
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // origin이 없는 경우 (같은 도메인) 또는 허용된 origin인 경우
+    if (!origin || allowedOrigins.some(allowed => 
+      typeof allowed === 'string' ? allowed === origin : allowed.test(origin)
+    )) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
+
+// Health check 엔드포인트
+app.get('/api/health', (req: Request, res: Response) => {
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'N-AutoPost Backend Server is running',
+    timestamp: new Date().toISOString()
+  });
+});
 
 // 자동화 데이터 타입
 interface AutoPublishRequest {
@@ -35,9 +64,19 @@ app.post('/api/auto-publish', async (req: Request, res: Response) => {
 
   try {
     console.log('🚀 Step 1: Playwright 브라우저 시작...');
+    const isProduction = process.env.NODE_ENV === 'production';
     browser = await chromium.launch({
-      headless: false, // 사용자가 볼 수 있도록
-      slowMo: 50 // 속도 조절
+      headless: isProduction, // 프로덕션에서는 headless 모드
+      slowMo: 50, // 속도 조절
+      args: isProduction ? [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--disable-gpu'
+      ] : []
     });
 
     const context = await browser.newContext({

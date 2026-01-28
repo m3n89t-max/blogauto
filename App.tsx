@@ -198,8 +198,11 @@ const App: React.FC = () => {
     try {
       console.log('🚀 백엔드 API 호출 중...');
       
+      // 백엔드 API URL (환경 변수 또는 기본값)
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3002';
+      
       // 백엔드 API 호출
-      const response = await fetch('http://localhost:3002/api/auto-publish', {
+      const response = await fetch(`${API_BASE_URL}/api/auto-publish`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
