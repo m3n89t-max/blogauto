@@ -56,31 +56,34 @@ VITE_GEMINI_API_KEY=your_google_gemini_api_key_here
 
 ### 개발 서버 실행
 
-**프론트엔드 + 백엔드 동시 실행 (권장):**
+> ⚠️ **중요**: 자동 발행 기능을 사용하려면 **프론트엔드와 백엔드를 모두** 실행해야 합니다!
+
+**✅ 권장: 프론트엔드 + 백엔드 동시 실행**
 ```bash
-pnpm run dev:all
-# 또는
 npm run dev:all
+# 또는
+pnpm run dev:all
 ```
 
-**프론트엔드만 실행:**
+**❌ 주의: 프론트엔드만 실행 (API 호출 실패)**
 ```bash
-pnpm run dev
-# 또는
+npm run dev      # 백엔드 없음 → 자동 발행 불가
+```
+
+**📦 개별 실행 (터미널 2개 필요)**
+```bash
+# 터미널 1 - 프론트엔드
 npm run dev
-```
 
-**백엔드만 실행:**
-```bash
-pnpm run dev:server
-# 또는
+# 터미널 2 - 백엔드
 npm run dev:server
 ```
 
+**접속 URL:**
 - 프론트엔드: http://localhost:3001
 - 백엔드 API: http://localhost:3002
 
-> **참고**: 네이버 블로그 자동 발행 기능을 사용하려면 백엔드 서버가 실행 중이어야 합니다.
+> 💡 **팁**: `dev:all` 명령어는 `concurrently`를 사용하여 한 터미널에서 두 서버를 동시에 실행합니다.
 
 ## 📁 프로젝트 구조
 
