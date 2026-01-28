@@ -112,8 +112,9 @@ npm run dev:server
 "Environment" 섹션에서 다음 변수 추가:
 ```
 NODE_ENV=production
-PORT=3002
 ```
+
+> ⚠️ **중요**: `PORT`는 설정하지 마세요! Render가 자동으로 할당합니다.
 
 ### Step 4: 배포 시작
 - **"Create Web Service"** 클릭
@@ -182,7 +183,7 @@ VITE_API_BASE_URL=https://n-autopost-backend.onrender.com
 #### Render (백엔드)
 ```bash
 NODE_ENV=production
-PORT=3002
+# PORT는 Render가 자동 할당 (설정 불필요)
 ```
 
 ---
@@ -261,6 +262,21 @@ Gemini API 키가 설정되지 않았습니다
 1. Vercel Dashboard → Project → Settings → Environment Variables
 2. `VITE_GEMINI_API_KEY` 추가
 3. Redeploy (Deployments → ... → Redeploy)
+
+### 문제 5: 백엔드 연결 실패 (PORT 충돌)
+**증상**:
+```
+Service Unavailable
+Application failed to respond
+```
+
+**원인**:
+Render 환경 변수에 `PORT=3002`를 설정했을 경우
+
+**해결**:
+1. Render Dashboard → 서비스 선택 → Environment
+2. `PORT` 환경 변수 **삭제**
+3. 자동 재배포 대기 (또는 Manual Deploy)
 
 ---
 
