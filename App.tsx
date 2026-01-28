@@ -28,7 +28,8 @@ const App: React.FC = () => {
     tone: 'professional',
     photoOption: 'news',
     topic: '', // 주제/키워드
-    angle: '', // 관점
+    angle: 'technology', // 관점
+    writingStyle: 'news', // 글쓰기 스타일: news (전문 뉴스 기사체) / blogger (블로거 스타일)
   });
   const [isPosting, setIsPosting] = useState(false);
   const [postingResult, setPostingResult] = useState<PostingResult | null>(null);
@@ -460,12 +461,32 @@ const App: React.FC = () => {
                           onChange={e => setSettings({ ...settings, angle: e.target.value as any })} 
                           className="w-full px-6 py-5 bg-[#0f0f0f] border border-gray-800 text-white rounded-2xl font-bold outline-none appearance-none"
                         >
-                          <option value="">선택하세요</option>
                           <option value="investment">💰 투자 관점</option>
                           <option value="policy">📜 정책 관점</option>
                           <option value="technology">💻 기술 관점</option>
                           <option value="life">🏠 생활 영향 관점</option>
                         </select>
+                      </div>
+
+                      {/* 글쓰기 스타일 */}
+                      <div className="mb-6">
+                        <label className="text-xs font-black text-gray-500 uppercase tracking-widest ml-1 mb-3 block">글쓰기 스타일</label>
+                        <div className="flex bg-[#0f0f0f] p-1.5 rounded-2xl border border-gray-800">
+                          <button 
+                            onClick={() => setSettings({ ...settings, writingStyle: 'news' })} 
+                            className={`flex-1 py-4 text-xs font-black rounded-xl transition-all ${settings.writingStyle === 'news' ? 'bg-white shadow-lg text-gray-900' : 'text-gray-500 hover:text-gray-300'}`}
+                          >
+                            📰 뉴스 기사체
+                            <div className="text-[9px] mt-1 font-normal opacity-70">중립적, 사실 중심</div>
+                          </button>
+                          <button 
+                            onClick={() => setSettings({ ...settings, writingStyle: 'blogger' })} 
+                            className={`flex-1 py-4 text-xs font-black rounded-xl transition-all ${settings.writingStyle === 'blogger' ? 'bg-white shadow-lg text-gray-900' : 'text-gray-500 hover:text-gray-300'}`}
+                          >
+                            ✍️ 블로거 스타일
+                            <div className="text-[9px] mt-1 font-normal opacity-70">1인칭, 친근, 의견 포함</div>
+                          </button>
+                        </div>
                       </div>
 
                       {/* AI 제목 추천 */}

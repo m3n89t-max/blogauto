@@ -18,6 +18,8 @@ export type PhotoOption = 'news' | 'ai' | 'none';
 
 export type Angle = 'investment' | 'policy' | 'technology' | 'life';
 
+export type WritingStyle = 'blogger' | 'news'; // blogger: 블로거 스타일 (1인칭, 친근), news: 뉴스 기사체 (중립, 사실 중심)
+
 export interface PostSettings {
   useAiTitle: boolean;
   manualTitle: string;
@@ -25,6 +27,7 @@ export interface PostSettings {
   photoOption: PhotoOption;
   topic?: string; // 주제/키워드 (선택사항)
   angle?: Angle; // 관점
+  writingStyle?: WritingStyle; // 글쓰기 스타일 (기본값: news)
 }
 
 export interface PostingResult {
